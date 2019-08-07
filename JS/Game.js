@@ -3,8 +3,8 @@ var vertexShaderText =
     "precision mediump float;",
     "",
     "attribute vec3 vertPosition;",
-    "attribute vec3 vertColor;",
     "varying vec3 fragColor;",
+    "uniform vec3 vertColor;",
     "uniform mat4 mWorld;",
     "uniform mat4 mView;",
     "uniform mat4 mProj;",
@@ -90,42 +90,42 @@ var InitDemo = function()
   
     // Create buffer
     var boxVertices = 
-	[ // X, Y, Z           R, G, B
+	[ // X, Y, Z
 		// Top
-		-1.0, 1.0, -1.0,   0.5, 0.5, 0.5,
-		-1.0, 1.0, 1.0,    0.5, 0.5, 0.5,
-		1.0, 1.0, 1.0,     0.5, 0.5, 0.5,
-		1.0, 1.0, -1.0,    0.5, 0.5, 0.5,
+		-1.0, 1.0, -1.0,
+		-1.0, 1.0, 1.0,
+		1.0, 1.0, 1.0,
+		1.0, 1.0, -1.0,
 
 		// Left
-		-1.0, 1.0, 1.0,    0.75, 0.25, 0.5,
-		-1.0, -1.0, 1.0,   0.75, 0.25, 0.5,
-		-1.0, -1.0, -1.0,  0.75, 0.25, 0.5,
-		-1.0, 1.0, -1.0,   0.75, 0.25, 0.5,
+		-1.0, 1.0, 1.0,
+		-1.0, -1.0, 1.0,
+		-1.0, -1.0, -1.0,
+		-1.0, 1.0, -1.0,
 
 		// Right
-		1.0, 1.0, 1.0,    0.25, 0.25, 0.75,
-		1.0, -1.0, 1.0,   0.25, 0.25, 0.75,
-		1.0, -1.0, -1.0,  0.25, 0.25, 0.75,
-		1.0, 1.0, -1.0,   0.25, 0.25, 0.75,
+		1.0, 1.0, 1.0,
+		1.0, -1.0, 1.0,
+		1.0, -1.0, -1.0,
+		1.0, 1.0, -1.0,
 
 		// Front
-		1.0, 1.0, 1.0,    1.0, 0.0, 0.15,
-		1.0, -1.0, 1.0,    1.0, 0.0, 0.15,
-		-1.0, -1.0, 1.0,    1.0, 0.0, 0.15,
-		-1.0, 1.0, 1.0,    1.0, 0.0, 0.15,
+		1.0, 1.0, 1.0,
+		1.0, -1.0, 1.0,
+		-1.0, -1.0, 1.0,
+		-1.0, 1.0, 1.0,
 
 		// Back
-		1.0, 1.0, -1.0,    0.0, 1.0, 0.15,
-		1.0, -1.0, -1.0,    0.0, 1.0, 0.15,
-		-1.0, -1.0, -1.0,    0.0, 1.0, 0.15,
-		-1.0, 1.0, -1.0,    0.0, 1.0, 0.15,
+		1.0, 1.0, -1.0,
+		1.0, -1.0, -1.0,
+		-1.0, -1.0, -1.0,
+		-1.0, 1.0, -1.0,
 
 		// Bottom
-		-1.0, -1.0, -1.0,   0.5, 0.5, 1.0,
-		-1.0, -1.0, 1.0,    0.5, 0.5, 1.0,
-		1.0, -1.0, 1.0,     0.5, 0.5, 1.0,
-		1.0, -1.0, -1.0,    0.5, 0.5, 1.0,
+		-1.0, -1.0, -1.0,
+		-1.0, -1.0, 1.0,
+		1.0, -1.0, 1.0,
+		1.0, -1.0, -1.0
 	];
 
 	var boxIndices =
@@ -166,32 +166,26 @@ var InitDemo = function()
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(boxIndices), gl.STATIC_DRAW);
 
     var positionAttributeLocation = gl.getAttribLocation(program, "vertPosition");
-    var colorAttributeLocation = gl.getAttribLocation(program, "vertColor");
     gl.vertexAttribPointer(
         positionAttributeLocation, // Attrib location
         3,  // Num of elements per attrib
         gl.FLOAT,   // Type of elements
         gl.FALSE,
-        6 * Float32Array.BYTES_PER_ELEMENT, // Size of an indivitual vertex
+        3 * Float32Array.BYTES_PER_ELEMENT, // Size of an indivitual vertex
         0 // Offset from the beginning of a single vertex to this attrib
     );
-    gl.vertexAttribPointer(
-        colorAttributeLocation, // Attrib location
-        3,  // Num of elements per attrib
-        gl.FLOAT,   // Type of elements
-        gl.FALSE,
-        6 * Float32Array.BYTES_PER_ELEMENT, // Size of an indivitual vertex
-        3 * Float32Array.BYTES_PER_ELEMENT // Offset from the beginning of a single vertex to this attrib
-    );
-
+    
     gl.enableVertexAttribArray(positionAttributeLocation);
-    gl.enableVertexAttribArray(colorAttributeLocation);
+
+    var boxColor = [0.2, 0.6, 0.2];
 
     gl.useProgram(program);
 
     var matWorldUniformLocation = gl.getUniformLocation(program, "mWorld");
     var matViewUniformLocation = gl.getUniformLocation(program, "mView");
     var matProjUniformLocation = gl.getUniformLocation(program, "mProj");
+
+    var vertColorLocation = gl.getUniformLocation(program, "vertColor");
 
     var worldMatrix = new Float32Array(16);
     var viewMatrix = new Float32Array(16);
@@ -203,6 +197,8 @@ var InitDemo = function()
     gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
     gl.uniformMatrix4fv(matViewUniformLocation, gl.FALSE, viewMatrix);
     gl.uniformMatrix4fv(matProjUniformLocation, gl.FALSE, projMatrix);
+
+    gl.uniform3fv(vertColorLocation, boxColor);
 
     var xRotationMatrix = new Float32Array(16);
     var yRotationMatrix = new Float32Array(16);
