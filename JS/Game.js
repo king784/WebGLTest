@@ -203,6 +203,23 @@ var InitDemo = function()
     var xRotationMatrix = new Float32Array(16);
     var yRotationMatrix = new Float32Array(16);
 
+    // Camera
+    var cameraPos = [0.0, 0.0, 3.0];
+    var cameraTarget = [0.0, 0.0, 0.0];
+    var cameraPosMTarget = [0.0, 0.0, 0.0];
+    glMatrix.vec3.subtract(cameraPosMTarget, cameraPos, cameraTarget);
+    var cameraDir = [0.0, 0.0, 0.0];
+    glMatrix.vec3.normalize(cameraDir, cameraPosMTarget);
+
+    var up = [0.0, 1.0, 0.0];
+    var cameraRight = [0.0, 0.0, 0.0];
+    var crossProductOfUpAndDir = [0.0, 0.0, 0.0];
+    glMatrix.vec3.cross(crossProductOfUpAndDir, up, cameraDir);
+    glMatrix.vec3.normalize(cameraRight, crossProductOfUpAndDir);
+    
+    var cameraUp = [0.0, 0.0, 0.0];
+    glMatrix.vec3.cross(cameraUp, cameraDir, cameraRight);
+
     // main render loop
     var identityMatrix = new Float32Array(16);
     glMatrix.mat4.identity(identityMatrix);
@@ -223,3 +240,12 @@ var InitDemo = function()
     };
     requestAnimationFrame(loop);
 };
+
+document.addEventListener('keydown', function(event) {
+    if(event.keyCode == 65) {
+        alert('Left was pressed');
+    }
+    else if(event.keyCode == 68) {
+        alert('Right was pressed');
+    }
+});
