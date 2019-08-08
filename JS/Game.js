@@ -28,6 +28,9 @@ var fragmentShaderText =
     "}"
 ].join("\n");
 
+var moveX = 0.0;
+var moveZ = 0.0;
+
 var InitDemo = function()
 {
     var canvas = document.getElementById("GameCanvas");
@@ -177,7 +180,8 @@ var InitDemo = function()
     
     gl.enableVertexAttribArray(positionAttributeLocation);
 
-    var boxColor = [0.2, 0.6, 0.2];
+    var boxColor = [0.6, 0.2, 0.2];
+	var box2Color = [0.1, 0.7, 0.1];
 
     gl.useProgram(program);
 
@@ -219,33 +223,48 @@ var InitDemo = function()
     
     var cameraUp = [0.0, 0.0, 0.0];
     glMatrix.vec3.cross(cameraUp, cameraDir, cameraRight);
+	
+	var moveVec = [moveX, 0.0, moveZ];
 
     // main render loop
     var identityMatrix = new Float32Array(16);
+	var moveMatrix = new Float32Array(16);
     glMatrix.mat4.identity(identityMatrix);
     var angle = 0;
     var loop = function()
     {
         angle = performance.now() / 1000 / 6 * 2 * Math.PI;
         glMatrix.mat4.rotate(yRotationMatrix, identityMatrix, angle, [0, 1, 0]);
-        glMatrix.mat4.rotate(xRotationMatrix, identityMatrix, angle * 0.25, [1, 0, 0]);
+        glMatrix.mat4.rotate(xRotationMatrix, identityMatrix, angle * 0.5, [1, 0, 0]);
         glMatrix.mat4.mul(worldMatrix, yRotationMatrix, xRotationMatrix);
         gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
 
         gl.clearColor(0.75, 0.85, 0.8, 1.0);
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
         gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0);
+		
+		gl.uniform3fv(vertColorLocation, box2Color);
+		glMatrix.mat4.translate(worldMatrix, moveMatrix, moveVec);
+		gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
+		gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0);
 
         requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
 };
 
-document.addEventListener('keydown', function(event) {
-    if(event.keyCode == 65) {
-        alert('Left was pressed');
+document.addEventListener('keydown', function(event) 
+{
+    if(event.keyCode == 65) 
+	{
+		moveX += 10.0;
+		moveVec = [moveX, 0.0, moveZ];
+		console.log(moveX);
     }
-    else if(event.keyCode == 68) {
-        alert('Right was pressed');
+    else if(event.keyCode == 68) 
+	{
+        moveX -= 1.0;
+		moveVec = [moveX, 0.0, moveZ];
+		console.log(moveX);
     }
 });
