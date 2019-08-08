@@ -30,6 +30,7 @@ var fragmentShaderText =
 
 var moveX = 0.0;
 var moveZ = 0.0;
+var moveVec = [moveX, 0.0, moveZ];
 
 var InitDemo = function()
 {
@@ -223,8 +224,6 @@ var InitDemo = function()
     
     var cameraUp = [0.0, 0.0, 0.0];
     glMatrix.vec3.cross(cameraUp, cameraDir, cameraRight);
-	
-	var moveVec = [moveX, 0.0, moveZ];
 
     // main render loop
     var identityMatrix = new Float32Array(16);
@@ -244,7 +243,8 @@ var InitDemo = function()
         gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0);
 		
 		gl.uniform3fv(vertColorLocation, box2Color);
-		glMatrix.mat4.translate(worldMatrix, moveMatrix, moveVec);
+        glMatrix.mat4.translate(worldMatrix, moveMatrix, moveVec);
+        console.log(moveVec.toString());
 		gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
 		gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0);
 
@@ -257,7 +257,7 @@ document.addEventListener('keydown', function(event)
 {
     if(event.keyCode == 65) 
 	{
-		moveX += 10.0;
+		moveX += 1.0;
 		moveVec = [moveX, 0.0, moveZ];
 		console.log(moveX);
     }
