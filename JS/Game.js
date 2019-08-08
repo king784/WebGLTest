@@ -244,7 +244,6 @@ var InitDemo = function()
 		
 		gl.uniform3fv(vertColorLocation, box2Color);
         glMatrix.mat4.translate(worldMatrix, moveMatrix, moveVec);
-        console.log(moveVec.toString());
 		gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
 		gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0);
 
