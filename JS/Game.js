@@ -32,6 +32,26 @@ var moveX = 0.0;
 var moveZ = 0.0;
 var moveVec = [moveX, 0.0, moveZ];
 
+// Camera
+var cameraFront = [0.0, 0.0, -1.0];
+var cameraPos = [0.0, 0.0, 3.0];
+var cameraTarget = [0.0, 0.0, 0.0];
+var cameraPosMTarget = [0.0, 0.0, 0.0];
+var cameraPosPlusFront = [0.0, 0.0, 0.0];
+
+var cameraDir = [0.0, 0.0, 0.0];
+
+var up = [0.0, 1.0, 0.0];
+var cameraRight = [0.0, 0.0, 0.0];
+var crossProductOfUpAndDir = [0.0, 0.0, 0.0];
+
+var cameraUp = [0.0, 0.0, 0.0];
+
+// MVP
+var worldMatrix = new Float32Array(16);
+var viewMatrix = new Float32Array(16);
+var projMatrix = new Float32Array(16);
+
 var InitDemo = function()
 {
     var canvas = document.getElementById("GameCanvas");
@@ -192,9 +212,6 @@ var InitDemo = function()
 
     var vertColorLocation = gl.getUniformLocation(program, "vertColor");
 
-    var worldMatrix = new Float32Array(16);
-    var viewMatrix = new Float32Array(16);
-    var projMatrix = new Float32Array(16);
     glMatrix.mat4.identity(worldMatrix);
     glMatrix.mat4.lookAt(viewMatrix, [0, 0, -7], [0, 0, 0], [0, 1, 0]);
     glMatrix.mat4.perspective(projMatrix, glMatrix.glMatrix.toRadian(45), canvas.width / canvas.height, 0.1, 1000.0);
@@ -208,42 +225,45 @@ var InitDemo = function()
     var xRotationMatrix = new Float32Array(16);
     var yRotationMatrix = new Float32Array(16);
 
-    // Camera
-    var cameraPos = [0.0, 0.0, 3.0];
-    var cameraTarget = [0.0, 0.0, 0.0];
-    var cameraPosMTarget = [0.0, 0.0, 0.0];
+    // Cam Stuff
     glMatrix.vec3.subtract(cameraPosMTarget, cameraPos, cameraTarget);
-    var cameraDir = [0.0, 0.0, 0.0];
     glMatrix.vec3.normalize(cameraDir, cameraPosMTarget);
-
-    var up = [0.0, 1.0, 0.0];
-    var cameraRight = [0.0, 0.0, 0.0];
-    var crossProductOfUpAndDir = [0.0, 0.0, 0.0];
     glMatrix.vec3.cross(crossProductOfUpAndDir, up, cameraDir);
     glMatrix.vec3.normalize(cameraRight, crossProductOfUpAndDir);
-    
-    var cameraUp = [0.0, 0.0, 0.0];
     glMatrix.vec3.cross(cameraUp, cameraDir, cameraRight);
 
     // main render loop
     var identityMatrix = new Float32Array(16);
-	var moveMatrix = new Float32Array(16);
+    var moveMatrix = new Float32Array(16);
+    for(var i = 0; i < moveMatrix.length; i++)
+    {
+        moveMatrix[i] = 1;
+    }
     glMatrix.mat4.identity(identityMatrix);
     var angle = 0;
+
+    cameraPos = [0, 0, -7];
+    cameraUp = [0, 1, 0];
     var loop = function()
     {
         angle = performance.now() / 1000 / 6 * 2 * Math.PI;
-        glMatrix.mat4.rotate(yRotationMatrix, identityMatrix, angle, [0, 1, 0]);
-        glMatrix.mat4.rotate(xRotationMatrix, identityMatrix, angle * 0.5, [1, 0, 0]);
-        glMatrix.mat4.mul(worldMatrix, yRotationMatrix, xRotationMatrix);
+        glMatrix.mat4.lookAt(viewMatrix, cameraPos, cameraPosPlusFront, cameraUp);
+        gl.uniformMatrix4fv(matViewUniformLocation, gl.FALSE, viewMatrix);
+        //glMatrix.mat4.rotate(yRotationMatrix, identityMatrix, angle, [0, 1, 0]);
+        //glMatrix.mat4.rotate(xRotationMatrix, identityMatrix, angle * 0.5, [1, 0, 0]);
+        //glMatrix.mat4.mul(worldMatrix, yRotationMatrix, xRotationMatrix);
+        glMatrix.mat4.identity(worldMatrix);
+        gl.uniform3fv(vertColorLocation, boxColor);
         gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
 
         gl.clearColor(0.75, 0.85, 0.8, 1.0);
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
         gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0);
 		
-		gl.uniform3fv(vertColorLocation, box2Color);
-        glMatrix.mat4.translate(worldMatrix, moveMatrix, moveVec);
+        gl.uniform3fv(vertColorLocation, box2Color);
+        
+        glMatrix.mat4.translate(worldMatrix, identityMatrix, [2.0, 2.0, 1.0]);
+
 		gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
 		gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0);
 
@@ -254,16 +274,36 @@ var InitDemo = function()
 
 document.addEventListener('keydown', function(event) 
 {
+    // A
     if(event.keyCode == 65) 
 	{
 		moveX += 1.0;
 		moveVec = [moveX, 0.0, moveZ];
-		console.log(moveX);
+        console.log(moveX);
+        glMatrix.vec3.add(cameraPosPlusFront, cameraPos, cameraFront);
     }
+    // D
     else if(event.keyCode == 68) 
 	{
         moveX -= 1.0;
 		moveVec = [moveX, 0.0, moveZ];
-		console.log(moveX);
+        console.log(moveX);
+        glMatrix.vec3.add(cameraPosPlusFront, cameraPos, cameraFront);
+    }
+    // W
+    else if(event.keyCode == 87) 
+	{
+        moveX -= 1.0;
+		moveVec = [moveX, 0.0, moveZ];
+        console.log(moveX);
+        glMatrix.vec3.add(cameraPosPlusFront, cameraPos, cameraFront);
+    }
+    // S
+    else if(event.keyCode == 83) 
+	{
+        moveX -= 1.0;
+		moveVec = [moveX, 0.0, moveZ];
+        console.log(moveX);
+        glMatrix.vec3.subtract(cameraPosPlusFront, cameraPos, cameraFront);
     }
 });
